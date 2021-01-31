@@ -5,6 +5,11 @@ name = "pypi"
 
 [packages]
 tensorflow = "*"
+numpy = "*"
+matplotlib = "*"
+requests = "*"
+pygeotile = "*"
+pandas = "*"
 
 [dev-packages]
 
