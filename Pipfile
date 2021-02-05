@@ -6,10 +6,10 @@ name = "pypi"
 [packages]
 tensorflow = "*"
 numpy = "*"
-matplotlib = "*"
 requests = "*"
 pygeotile = "*"
 pandas = "*"
+matplotlib = "*"
 
 [dev-packages]
 
