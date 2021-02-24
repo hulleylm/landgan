@@ -1,0 +1,21 @@
+\documentclass[a4paper]{report}
+\include{final_diss.preamble}
+\renewcommand*{\thesection}{\arabic{section}}
+\renewcommand{\thesubsection}{\thesection(\alph{subsection})}
+
+\begin{document}
+\input{titlepage}
+\chapter*{Dedication}
+\chapter*{AnonTitle}
+\chapter*{Abstract}
+\chapter*{Contents}
+\chapter*{Introduction}
+
+\section{A section}
+\subsection{}
+Genetic Algorithms
+\appendix
+\renewcommand\bibname{References}
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+\end{document}

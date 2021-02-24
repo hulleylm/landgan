@@ -1,5 +1,5 @@
 import requests
-import csv
+import csv # to read polygon
 import pandas as pd
 import matplotlib.path as mpltPath
 import math
@@ -24,13 +24,13 @@ def getImageBounds(picSize, mapSize, scale, lat, lng):
 
     centreX, centreY = latLngToPoint(mapSize, lat, lng)
 
-    SWX = centreX - (mapSize/2)/ scale
-    SWY = centreY + (mapSize/2)/ scale
-    SWlat, SWlng = pointToLatLng(mapSize, SWX, SWY)
+    southWestX = centreX - (mapSize/2)/ scale
+    southWestY = centreY + (mapSize/2)/ scale
+    SWlat, SWlng = pointToLatLng(mapSize, southWestX, southWestY)
 
-    NEX = centreX + (mapSize/2)/ scale
-    NEY = centreY - (mapSize/2)/ scale
-    NElat, NElng = pointToLatLng(mapSize, NEX, NEY)
+    northEastX = centreX + (mapSize/2)/ scale
+    northEastY = centreY - (mapSize/2)/ scale
+    NElat, NElng = pointToLatLng(mapSize, northEastX, northEastY)
 
     return[SWlat, SWlng, NElat, NElng]
 
@@ -52,7 +52,7 @@ def checkIfLand(path, lat, lng):
         return True
     return False
 
-def requestImage(picSize, zoom, center):
+def requestImage(picSize, zoom, center, row, col):
 
     url = "https://maps.googleapis.com/maps/api/staticmap?center=" + center + \
         "&zoom=16&size=" + str(picSize) + "x" + str(picSize) + "&key=" + api_key + "&maptype=satellite&scale=2"
@@ -61,42 +61,39 @@ def requestImage(picSize, zoom, center):
     f = open(filename, 'wb')
     f.write(r.content)
     f.close()
-    print("writtern to file")
+    print("writtern to file" + filename)
 
 api_key = open("config.txt", "r", encoding="utf-16").read()
-polygon = pd.read_csv("satellite_images/sanFranPoly.csv").to_numpy()
-path = mpltPath.Path(polygon)
 
-# ToDo set NE and SE as largest/ smallest vales in polygon
-# NWlat, NWlng, SWllat, SWlng = getScanBounds(path)
+# Bounding box for area to be scanned. AreaID is added to file name.
 AreaID = "SanFran"
-NWlat = 38.1273952
-NWlng = -122.545723
-SElat = 37.6223939
-SElng = -122.3260534
-step = 0.0120359
+northWestLat = 38.1273952
+northWestLng = -122.545723
+southEastLat = 37.6223939
+southEastLng = -122.3260534
+
 zoom = 16
 picSize = 640
-mapSize = 256
+mapSize = 256 #Google map size, keep at 256
 scale = math.pow(2, zoom) / (picSize/mapSize)
 
-rows = int(round((NWlat - SElat)/step))
-columns = int(round((abs(NWlng) - abs(SElng))/step))
-
-startLat = NWlat
-startLng = NWlng
+startLat = northWestLat
+startLng = northWestLng
 startCorners = getImageBounds(picSize, mapSize, scale, startLat, startLng)
 lngStep = startCorners[3] - startCorners[1]
 
+col = 0
 lat = startLat
-for row in range(rows):
+
+while (lat >= southEastLat):
     lng = startLng
-    for col in range(columns):
-        if (path.contains_point([lng, lat])):
-            corners = getImageBounds(picSize, mapSize, scale, lat, lng)
-            center = str(lat) + "," + str(lng)
-            print(str(center) + " corners: " + str(corners))
-            requestImage(picSize, zoom, center)
+    row = 0
+
+    while lng <= southEastLng:
+        center = str(lat) + "," + str(lng)
+        requestImage(picSize, zoom, center, row, col)
+        row = row + 1
         lng = lng + lngStep
-    latStep = getLatStep(picSize, mapSize, scale, lat, lng)
-    lat = lat + latStep
+
+    col = col - 1
+    lat = lat + getLatStep(picSize, mapSize, scale, lat, lng)
