@@ -10,6 +10,7 @@ requests = "*"
 pygeotile = "*"
 pandas = "*"
 matplotlib = "*"
+pillow = "*"
 
 [dev-packages]
 
