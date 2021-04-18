@@ -11,6 +11,8 @@ pygeotile = "*"
 pandas = "*"
 matplotlib = "*"
 pillow = "*"
+scikit-learn = "*"
+scipy = "*"
 
 [dev-packages]
 

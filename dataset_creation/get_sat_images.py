@@ -1,11 +1,16 @@
+# Monday
+# The elevations are wrong. Check that the long, lats being used in the request are correct.
+# Must have data finished, normalised, example modelled on unity before end of day.
+# If have time: look into model
+
 import requests
 import math
-from PIL import Image
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import json
-
+from scipy.interpolate import griddata
+from PIL import Image
 
 def latLngToPoint(mapWidth, mapHeight, lat, lng):
 
@@ -40,8 +45,8 @@ def getImageBounds(mapWidth, mapHeight, xScale, yScale, lat, lng):
 def getElevStep(mapWidth, mapHeight, bounds):
     southWest = latLngToPoint(mapWidth, mapHeight, bounds[0], bounds[1])
     northEast = latLngToPoint(mapWidth, mapHeight, bounds[2], bounds[3])
-    latStep = (abs(southWest[0] - northEast[0]))/22
-    lngStep = (abs(southWest[1] - northEast[1]))/22
+    latStep = (abs(southWest[0] - northEast[0]))/numElevations
+    lngStep = (abs(southWest[1] - northEast[1]))/numElevations
 
     return(latStep, lngStep)
 
@@ -83,7 +88,8 @@ def requestImage(picHeight, picWidth, logoHeight, zoom, scale, maptype, lat, lng
 
 def requestElevations(mapWidth, mapHeight, image, bounds, elevSteps):
 
-    elevations = np.zeros([picWidth, picHeight, 1])
+    elevations = np.zeros((numElevations*numElevations))
+    TESTelevations = np.zeros((numElevations, numElevations))
 
     southWest = latLngToPoint(mapWidth, mapHeight, bounds[0], bounds[1])
     northWest = southWest
@@ -91,18 +97,28 @@ def requestElevations(mapWidth, mapHeight, image, bounds, elevSteps):
 
     point = northWest
 
-    for i in range(21):
+    for i in range(numElevations):
         url = "https://maps.googleapis.com/maps/api/elevation/json?locations="
-
-        for j in range(21):
+        for j in range(numElevations):
             latLng = pointToLatLng(mapWidth, mapHeight, point[0], point[1])
             url = url + str(latLng[0]) + "," + str(latLng[1]) + "|"
             point[0] = point[0] + elevSteps[0]
-        elevRow = getElevation(url)
-        #update "elevations" array with elevRow, steps of 5 pixels. (i think) 
+
+        elevDict = getElevation(url)
+
+        for k in range(len(elevDict)):
+            currentElev = round(elevDict[k]["elevation"], 3)
+            if currentElev < 0:
+                currentElev = 0
+            # currentElev = currentElev/90
+            elevations[(i*numElevations)+k] = currentElev
+            TESTelevations[i][k] = currentElev #next try reshape instead
+
         point[1] = point[1] + elevSteps[1]
     
-    pass
+    np.savetxt("test.csv", TESTelevations, delimiter=",")
+    elevationsMatrix = imputateElevs(elevations)
+    return elevationsMatrix
 
 def getElevation(url):
 
@@ -114,13 +130,48 @@ def getElevation(url):
     elevDict = json.loads(r)
     elevDict = elevDict["results"]
     
-    elevRow = np.zeros(len(elevDict))
-    for i in range(len(elevDict)):
-        currentElev = elevDict[i]["elevation"]
-        if currentElev == 0:
-            currentElev = -0.001
-        elevRow[i] = currentElev
+    return elevDict
+
+def imputateElevs(elevations):
+
+    grid_x, grid_y = np.mgrid[0:picWidth:1, 0:picHeight:1]
+
+    points = elevPoints
+    values = elevations
+
+    grid_z0 = griddata(points, values, (grid_x, grid_y), method='nearest')
+    grid_z1 = griddata(points, values, (grid_x, grid_y), method='linear')
+    grid_z2 = griddata(points, values, (grid_x, grid_y), method='cubic')
+
+    
+    saveImage(grid_z0, "zero")
+    saveImage(grid_z1, "one")
+    saveImage(grid_z2, "two")
+
+    np.savetxt("z.csv", grid_z0, delimiter=",")
+    np.savetxt("o.csv", grid_z1, delimiter=",")
+    np.savetxt("t.csv", grid_z2, delimiter=",")
+
     pass
+
+def getElevPoints():
+
+    numPoints = numElevations*numElevations
+    points = np.zeros((numPoints,2))
+    count = 0
+
+    for i in range(numElevations):
+        for j in range(numElevations):
+            points[count][0] = i*5
+            points[count][1] = j*5
+            count = count + 1
+
+    return points
+
+def saveImage(arr, name):
+
+    im = Image.fromarray(arr.astype(np.uint8))
+    im.save(name + ".png") #Saves all black img
 
 # Bounding box for area to be scanned. AreaID is added to file name.
 AreaID = "SF"
@@ -133,10 +184,13 @@ southEastLng = -122.4319237
 api_key = open("config.txt", "r", encoding="utf-16").read()
 zoom = 15
 logoHeight = 16 #(crop google logo off last 16 pixels)
-picHeight = 150
-picWidth = 150
+picHeight = 151
+picWidth = 151
 scale = 1
 maptype = "satellite"
+
+numElevations = 31
+elevPoints = getElevPoints()
 
 # --- do not change variables below this point ---
 
@@ -164,7 +218,7 @@ while (lat >= southEastLat):
     while lng <= southEastLng:
         bounds = getImageBounds(mapWidth, mapHeight, xScale, yScale, lat, lng)
         image = requestImage(picHeight, picWidth, logoHeight, zoom, scale, maptype, lat, lng, row, col)
-        requestElevations(mapWidth, mapHeight, image, bounds, elevSteps)
+        elevations = requestElevations(mapWidth, mapHeight, image, bounds, elevSteps)
         row = row + 1
         lng = lng + lngStep
 
