@@ -21,10 +21,10 @@ def latLngToPoint(mapWidth, mapHeight, lat, lng):
 
 def pointToLatLng(mapWidth, mapHeight, x, y):
 
-    lng = x / mapWidth * 360 - 180
-
     n = math.pi - 2 * math.pi * y / mapHeight
     lat = (180 / math.pi * math. atan(0.5 * (math.exp(n) - math.exp(-n))))
+
+    lng = x / mapWidth * 360 - 180
 
     return(lat, lng)
 
@@ -45,8 +45,9 @@ def getImageBounds(mapWidth, mapHeight, xScale, yScale, lat, lng):
 def getElevStep(mapWidth, mapHeight, bounds):
     southWest = latLngToPoint(mapWidth, mapHeight, bounds[0], bounds[1])
     northEast = latLngToPoint(mapWidth, mapHeight, bounds[2], bounds[3])
-    latStep = (abs(southWest[0] - northEast[0]))/numElevations
-    lngStep = (abs(southWest[1] - northEast[1]))/numElevations
+
+    latStep = (abs(southWest[1] - northEast[1]))/(numElevations - 1)
+    lngStep = (abs(southWest[0] - northEast[0]))/(numElevations - 1)
 
     return(latStep, lngStep)
 
@@ -89,16 +90,18 @@ def requestImage(picHeight, picWidth, logoHeight, zoom, scale, maptype, lat, lng
 def requestElevations(mapWidth, mapHeight, image, bounds, elevSteps):
 
     elevations = np.zeros((numElevations*numElevations))
-    TESTelevations = np.zeros((numElevations, numElevations))
+    TESTelevations = np.empty((numElevations, numElevations))
 
     southWest = latLngToPoint(mapWidth, mapHeight, bounds[0], bounds[1])
-    northWest = southWest
-    northWest[1] = southWest[1] - elevSteps[1]
 
-    point = northWest
+    origin = southWest.copy()
+    origin[1] = southWest[1] - (elevSteps[0]*(numElevations - 1))
+    point = origin.copy()
 
     for i in range(numElevations):
         url = "https://maps.googleapis.com/maps/api/elevation/json?locations="
+        point[0] = origin[0]
+
         for j in range(numElevations):
             latLng = pointToLatLng(mapWidth, mapHeight, point[0], point[1])
             url = url + str(latLng[0]) + "," + str(latLng[1]) + "|"
@@ -113,6 +116,7 @@ def requestElevations(mapWidth, mapHeight, image, bounds, elevSteps):
             # currentElev = currentElev/90
             elevations[(i*numElevations)+k] = currentElev
             TESTelevations[i][k] = currentElev #next try reshape instead
+            
 
         point[1] = point[1] + elevSteps[1]
     
@@ -142,6 +146,7 @@ def imputateElevs(elevations):
     grid_z0 = griddata(points, values, (grid_x, grid_y), method='nearest')
     grid_z1 = griddata(points, values, (grid_x, grid_y), method='linear')
     grid_z2 = griddata(points, values, (grid_x, grid_y), method='cubic')
+    grid_z2[grid_z2<0] = 0
 
     
     saveImage(grid_z0, "zero")
@@ -162,8 +167,8 @@ def getElevPoints():
 
     for i in range(numElevations):
         for j in range(numElevations):
-            points[count][0] = i*5
-            points[count][1] = j*5
+            points[count][0] = i*3
+            points[count][1] = j*3
             count = count + 1
 
     return points
@@ -171,7 +176,7 @@ def getElevPoints():
 def saveImage(arr, name):
 
     im = Image.fromarray(arr.astype(np.uint8))
-    im.save(name + ".png") #Saves all black img
+    im.save(name + ".png")
 
 # Bounding box for area to be scanned. AreaID is added to file name.
 AreaID = "SF"
@@ -184,12 +189,12 @@ southEastLng = -122.4319237
 api_key = open("config.txt", "r", encoding="utf-16").read()
 zoom = 15
 logoHeight = 16 #(crop google logo off last 16 pixels)
-picHeight = 151
-picWidth = 151
+picHeight = 160
+picWidth = 160
 scale = 1
 maptype = "satellite"
 
-numElevations = 31
+numElevations = 54
 elevPoints = getElevPoints()
 
 # --- do not change variables below this point ---
@@ -204,8 +209,6 @@ startLng = northWestLng
 
 startCorners = getImageBounds(mapWidth, mapHeight, xScale, yScale, startLat, startLng)
 
-elevSteps = getElevStep(mapWidth, mapHeight, startCorners)
-
 lngStep = startCorners[3] - startCorners[1]
 
 col = 0
@@ -218,6 +221,7 @@ while (lat >= southEastLat):
     while lng <= southEastLng:
         bounds = getImageBounds(mapWidth, mapHeight, xScale, yScale, lat, lng)
         image = requestImage(picHeight, picWidth, logoHeight, zoom, scale, maptype, lat, lng, row, col)
+        elevSteps = getElevStep(mapWidth, mapHeight, bounds)
         elevations = requestElevations(mapWidth, mapHeight, image, bounds, elevSteps)
         row = row + 1
         lng = lng + lngStep
