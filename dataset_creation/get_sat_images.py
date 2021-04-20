@@ -65,27 +65,25 @@ def getLatStep(mapWidth, mapHeight, yScale, lat, lng):
 def requestImage(picHeight, picWidth, logoHeight, zoom, scale, maptype, lat, lng, row, col):
 
     center = str(lat) + "," + str(lng)
-    url = "https://maps.googleapis.com/maps/api/staticmap?center=" + center + "&zoom=" + str(zoom) + "&size=" + str(picWidth) + "x" + str(picHeight+logoHeight) + "&key=" + api_key + "&maptype=" + maptype + "&scale=" + str(scale)
-    filename = "dataset_creation/outputSatImg/" + AreaID + str(col) + "," + str(row) + ".png"
+    url = "https://maps.googleapis.com/maps/api/staticmap?center=" + center + "&zoom=" + str(zoom) + "&size=" + str(picWidth) + "x" + str(picHeight+logoHeight*2) + "&key=" + api_key + "&maptype=" + maptype + "&scale=" + str(scale)
+    filename = "dataset_creation/outputSatImg/" + AreaID + str(col) + "," + str(row) + "aaaaaaaaaaaa.png"
 
-    img = "hi"
-
-    # satImage = requests.get(url)
+    satImage = requests.get(url)
     # img = tf.image.decode_png(satImage.content, channels=3)
-    # img = tf.image.crop_to_bounding_box(img, 0, 0, picWidth, picHeight) #Crop Google logo from base.
-    # # image = tf.map_fn(lambda x: x/255.0, img)
-    # # image = tf.image.per_image_standardization(img)
-    # # arr_ = np.squeeze(img) # you can give axis attribute if you wanna squeeze in specific dimension
-    # # plt.imshow(arr_)
-    # # plt.show()
+    # img = tf.image.crop_to_bounding_box(img, 0, 0, picWidth, picHeight) #Crop Google logo from base. need to crop top as well!
+    # image = tf.map_fn(lambda x: x/255.0, img)
+    # image = tf.image.per_image_standardization(img)
+    # arr_ = np.squeeze(img) # you can give axis attribute if you wanna squeeze in specific dimension
+    # plt.imshow(arr_)
+    # plt.show()
 
-    # f = open(filename, 'wb')
-    # f.write(satImage.content)
-    # f.close()
+    f = open(filename, 'wb')
+    f.write(satImage.content)
+    f.close()
 
     print("writtern to file: " + filename)
 
-    return img
+    pass
 
 def requestElevations(mapWidth, mapHeight, image, bounds, elevSteps):
 
@@ -167,8 +165,8 @@ def getElevPoints():
 
     for i in range(numElevations):
         for j in range(numElevations):
-            points[count][0] = i*3
-            points[count][1] = j*3
+            points[count][0] = i*((picHeight-1)/numElevations)
+            points[count][1] = j*((picHeight-1)/numElevations)
             count = count + 1
 
     return points
@@ -188,13 +186,13 @@ southEastLng = -122.4319237
 # Variables for API request (more info in README)
 api_key = open("config.txt", "r", encoding="utf-16").read()
 zoom = 15
-logoHeight = 16 #(crop google logo off last 16 pixels)
-picHeight = 160
-picWidth = 160
+logoHeight = 22 #(crop google logo off last 16 pixels)
+picHeight = 257
+picWidth = 257
 scale = 1
 maptype = "satellite"
 
-numElevations = 54
+numElevations = 64 # Should be factor of pic height/ width -1
 elevPoints = getElevPoints()
 
 # --- do not change variables below this point ---
