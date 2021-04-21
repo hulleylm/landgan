@@ -13,6 +13,8 @@ matplotlib = "*"
 pillow = "*"
 scikit-learn = "*"
 scipy = "*"
+ipython = "*"
+opencv-python = "*"
 
 [dev-packages]
 

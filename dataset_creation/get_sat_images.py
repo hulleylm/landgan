@@ -1,16 +1,14 @@
-# Monday
-# The elevations are wrong. Check that the long, lats being used in the request are correct.
-# Must have data finished, normalised, example modelled on unity before end of day.
-# If have time: look into model
-
 import requests
 import math
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import json
-from scipy.interpolate import griddata
 from PIL import Image
+from scipy.interpolate import griddata
+from matplotlib.image import imread
+import cv2
+import pickle 
 
 def latLngToPoint(mapWidth, mapHeight, lat, lng):
 
@@ -65,30 +63,22 @@ def getLatStep(mapWidth, mapHeight, yScale, lat, lng):
 def requestImage(picHeight, picWidth, logoHeight, zoom, scale, maptype, lat, lng, row, col):
 
     center = str(lat) + "," + str(lng)
-    url = "https://maps.googleapis.com/maps/api/staticmap?center=" + center + "&zoom=" + str(zoom) + "&size=" + str(picWidth) + "x" + str(picHeight+logoHeight*2) + "&key=" + api_key + "&maptype=" + maptype + "&scale=" + str(scale)
+    url = "https://maps.googleapis.com/maps/api/staticmap?center=" + center + "&zoom=" + str(zoom) + "&size=" + str(picWidth) + "x" + str(picHeight+(logoHeight*2)) + "&key=" + api_key + "&maptype=" + maptype + "&scale=" + str(scale)
     filename = "dataset_creation/outputSatImg/" + AreaID + str(col) + "," + str(row) + "aaaaaaaaaaaa.png"
 
     satImage = requests.get(url)
-    # img = tf.image.decode_png(satImage.content, channels=3)
-    # img = tf.image.crop_to_bounding_box(img, 0, 0, picWidth, picHeight) #Crop Google logo from base. need to crop top as well!
-    # image = tf.map_fn(lambda x: x/255.0, img)
-    # image = tf.image.per_image_standardization(img)
-    # arr_ = np.squeeze(img) # you can give axis attribute if you wanna squeeze in specific dimension
-    # plt.imshow(arr_)
-    # plt.show()
-
-    f = open(filename, 'wb')
-    f.write(satImage.content)
-    f.close()
-
+    img = tf.image.decode_png(satImage.content, channels=3)
+    img = tf.image.crop_to_bounding_box(img, logoHeight, 0, picWidth, picHeight) #Crop Google logo from base. need to crop top as well!
+    
     print("writtern to file: " + filename)
 
-    pass
+    return img
 
-def requestElevations(mapWidth, mapHeight, image, bounds, elevSteps):
+def requestElevations(mapWidth, mapHeight, bounds, elevSteps):
 
-    elevations = np.zeros((numElevations*numElevations))
-    TESTelevations = np.empty((numElevations, numElevations))
+    elevationsPoints = numElevations+1
+    elevations = np.zeros((elevationsPoints*elevationsPoints))
+    TESTelevations = np.empty((elevationsPoints, elevationsPoints))
 
     southWest = latLngToPoint(mapWidth, mapHeight, bounds[0], bounds[1])
 
@@ -96,11 +86,11 @@ def requestElevations(mapWidth, mapHeight, image, bounds, elevSteps):
     origin[1] = southWest[1] - (elevSteps[0]*(numElevations - 1))
     point = origin.copy()
 
-    for i in range(numElevations):
+    for i in range(elevationsPoints):
         url = "https://maps.googleapis.com/maps/api/elevation/json?locations="
         point[0] = origin[0]
 
-        for j in range(numElevations):
+        for j in range(elevationsPoints):
             latLng = pointToLatLng(mapWidth, mapHeight, point[0], point[1])
             url = url + str(latLng[0]) + "," + str(latLng[1]) + "|"
             point[0] = point[0] + elevSteps[0]
@@ -112,7 +102,7 @@ def requestElevations(mapWidth, mapHeight, image, bounds, elevSteps):
             if currentElev < 0:
                 currentElev = 0
             # currentElev = currentElev/90
-            elevations[(i*numElevations)+k] = currentElev
+            elevations[(i*elevationsPoints)+k] = currentElev
             TESTelevations[i][k] = currentElev #next try reshape instead
             
 
@@ -141,40 +131,63 @@ def imputateElevs(elevations):
     points = elevPoints
     values = elevations
 
-    grid_z0 = griddata(points, values, (grid_x, grid_y), method='nearest')
-    grid_z1 = griddata(points, values, (grid_x, grid_y), method='linear')
-    grid_z2 = griddata(points, values, (grid_x, grid_y), method='cubic')
-    grid_z2[grid_z2<0] = 0
+    # nearest = griddata(points, values, (grid_x, grid_y), method='nearest')
+    # linear = griddata(points, values, (grid_x, grid_y), method='linear')
+    cubic = griddata(points, values, (grid_x, grid_y), method='cubic')
+    cubic[cubic<0] = 0
+    cubic[cubic>255] = 255
 
-    
-    saveImage(grid_z0, "zero")
-    saveImage(grid_z1, "one")
-    saveImage(grid_z2, "two")
+    # -------- Output Images for testing ---------
 
-    np.savetxt("z.csv", grid_z0, delimiter=",")
-    np.savetxt("o.csv", grid_z1, delimiter=",")
-    np.savetxt("t.csv", grid_z2, delimiter=",")
+    # saveImage(nearest, "zero")
+    # saveImage(linear, "one")
+    # saveImage(cubic, "two")
 
-    pass
+    # np.savetxt("nearest.csv", nearest, delimiter=",")
+    # np.savetxt("linear.csv", linear, delimiter=",")
+    # np.savetxt("cubic.csv", cubic, delimiter=",")
+
+    newG = cubic.reshape((cubic.shape[0], cubic.shape[1], 1))
+
+    imputedArray = tf.convert_to_tensor(tf.constant(newG))
+    # imputedArray = tf.dtypes.cast(imputedArray, tf.uint8)
+
+    return imputedArray
 
 def getElevPoints():
 
-    numPoints = numElevations*numElevations
+    elevations = numElevations+1
+    numPoints = (elevations)*(elevations)
+
     points = np.zeros((numPoints,2))
     count = 0
 
-    for i in range(numElevations):
-        for j in range(numElevations):
+    for i in range(elevations):
+        for j in range(elevations):
             points[count][0] = i*((picHeight-1)/numElevations)
             points[count][1] = j*((picHeight-1)/numElevations)
             count = count + 1
 
     return points
 
-def saveImage(arr, name):
+def createTensor(image, elevations):
 
-    im = Image.fromarray(arr.astype(np.uint8))
-    im.save(name + ".png")
+    # RGBAimage = tf.io.encode_png(image)
+    # tf.io.write_file("image.png", RGBAimage)
+    # combined = tf.concat([image, elevations], axis=2)
+
+    image = tf.dtypes.cast(image, tf.float64)
+    normalisedImage = normalise(image)
+    normalisedElevs = normalise(elevations, minE, maxE)
+    combined = tf.concat([image, elevations], axis=2)
+
+    pass
+
+def normalise(arr, minE = 0, maxE = 255):
+
+    normailsed = tf.map_fn(lambda x: (x - minE)/(maxE - minE), arr)
+
+    return normailsed
 
 # Bounding box for area to be scanned. AreaID is added to file name.
 AreaID = "SF"
@@ -194,6 +207,8 @@ maptype = "satellite"
 
 numElevations = 64 # Should be factor of pic height/ width -1
 elevPoints = getElevPoints()
+maxE = 255
+minE = 0
 
 # --- do not change variables below this point ---
 
@@ -220,7 +235,8 @@ while (lat >= southEastLat):
         bounds = getImageBounds(mapWidth, mapHeight, xScale, yScale, lat, lng)
         image = requestImage(picHeight, picWidth, logoHeight, zoom, scale, maptype, lat, lng, row, col)
         elevSteps = getElevStep(mapWidth, mapHeight, bounds)
-        elevations = requestElevations(mapWidth, mapHeight, image, bounds, elevSteps)
+        elevations = requestElevations(mapWidth, mapHeight, bounds, elevSteps)
+        createTensor(image, elevations)
         row = row + 1
         lng = lng + lngStep
 
