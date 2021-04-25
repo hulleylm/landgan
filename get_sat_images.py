@@ -10,6 +10,8 @@ from matplotlib.image import imread
 import cv2
 import pickle 
 
+#test for lib
+
 def latLngToPoint(mapWidth, mapHeight, lat, lng):
 
     x = (lng + 180) * (mapWidth/360)
