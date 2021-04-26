@@ -9,8 +9,7 @@ from scipy.interpolate import griddata
 from matplotlib.image import imread
 import cv2
 import pickle 
-
-#test for lib
+import csv
 
 def latLngToPoint(mapWidth, mapHeight, lat, lng):
 
@@ -81,11 +80,15 @@ def requestImage(picHeight, picWidth, logoHeight, zoom, scale, maptype, lat, lng
 
     center = str(lat) + "," + str(lng)
     url = "https://maps.googleapis.com/maps/api/staticmap?center=" + center + "&zoom=" + str(zoom) + "&size=" + str(picWidth) + "x" + str(picHeight+(logoHeight*2)) + "&key=" + api_key + "&maptype=" + maptype + "&scale=" + str(scale)
-    filename = "dataset_creation/outputSatImg/" + areaID + str(col) + "," + str(row) + "aaaaaaaaaaaa.png"
-
     satImage = requests.get(url)
     img = tf.image.decode_png(satImage.content, channels=3)
-    img = tf.image.crop_to_bounding_box(img, logoHeight, 0, picWidth, picHeight) #Crop Google logo from base. need to crop top as well!
+    img = tf.image.crop_to_bounding_box(img, logoHeight, 0, picWidth, picHeight)
+
+    # ---- Print the requested image ----
+    # RGBimage = tf.io.encode_png(img)
+    # filename = "testOutput/image_" + str(row) + "," + str(col) + ".png"
+    # tf.io.write_file(filename, RGBimage)
+    # -----
 
     return img
 
@@ -115,12 +118,12 @@ def requestElevations(mapWidth, mapHeight, bounds, elevSteps):
             currentElev = round(elevDict[k]["elevation"], 3)
             if currentElev < 0:
                 currentElev = 0
-            # currentElev = currentElev/90
             elevations[(i*elevationsPoints)+k] = currentElev            
 
         point[1] = point[1] + elevSteps[1]
     
     elevationsMatrix = imputateElevs(elevations)
+
     return elevationsMatrix
 
 def getElevation(url):
@@ -141,26 +144,14 @@ def imputateElevs(elevations):
 
     points = elevPoints
     values = elevations
-
-    # nearest = griddata(points, values, (grid_x, grid_y), method='nearest')
-    # linear = griddata(points, values, (grid_x, grid_y), method='linear')
+    
     cubic = griddata(points, values, (grid_x, grid_y), method='cubic')
+
     cubic[cubic<minE] = minE
     cubic[cubic>maxE] = maxE
 
-    # -------- Output Images for testing ---------
-
-    # saveImage(nearest, "zero")
-    # saveImage(linear, "one")
-    # saveImage(cubic, "two")
-
-    # np.savetxt("nearest.csv", nearest, delimiter=",")
-    # np.savetxt("linear.csv", linear, delimiter=",")
-    # np.savetxt("cubic.csv", cubic, delimiter=",")
-
-    newG = cubic.reshape((cubic.shape[0], cubic.shape[1], 1))
-
-    imputedArray = tf.convert_to_tensor(tf.constant(newG))
+    cubic = cubic.reshape((cubic.shape[0], cubic.shape[1], 1))
+    imputedArray = tf.convert_to_tensor(tf.constant(cubic))
     # imputedArray = tf.dtypes.cast(imputedArray, tf.uint8)
 
     return imputedArray
@@ -183,18 +174,29 @@ def getElevPoints():
 
 def createTensor(image, elevations):
 
-    # RGBAimage = tf.io.encode_png(image)
-    # tf.io.write_file("image.png", RGBAimage)
-    # combined = tf.concat([image, elevations], axis=2)
-
     image = tf.dtypes.cast(image, tf.float64)
     normalisedImage = normalise(image)
     normalisedElevs = normalise(elevations, minE, maxE)
     combined = tf.concat([normalisedImage, normalisedElevs], axis=2)
 
+    # ---- Print heightmap ----
+    # elevMax = tf.reduce_max(normalisedElevs)
+    # elevMax = elevMax.numpy()
+    # elevMin = tf.reduce_min(normalisedElevs)
+    # elevMin = elevMin.numpy()
+    # heightmap = tf.map_fn(lambda x: (((x - elevMin) * (255 - 0)) / (elevMax - elevMin)) + 0, normalisedElevs)
+    # heightmap = tf.dtypes.cast(heightmap, tf.uint8)
+    # heightmap = tf.io.encode_png(heightmap) #
+    # tf.io.write_file("testOutput/height_" + str(row) + "," + str(col) + ".png", heightmap)
+    #-----
+
     filename = "data/" + areaID + "_" + str(row) + "," + str(col) + ".obj"
-    f = open(filename, 'wb') 
+    f = open(filename, 'wb')
     pickle.dump(combined, f)
+
+    with open(r"pickledPoints.csv", 'a', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(filename)
 
 def normalise(arr, minE = 0, maxE = 255):
 
@@ -204,10 +206,10 @@ def normalise(arr, minE = 0, maxE = 255):
 
 # Bounding box for area to be scanned. AreaID is added to file name.
 areaID = "SanFran"
-northWestLat = 55.988711
-northWestLng = -3.211164
-southEastLat = 55.933502
-southEastLng = -3.127825
+northWestLat = 38.561223
+northWestLng = -123.207851
+southEastLat = 37.089995
+southEastLng = -121.513108
 
 # Variables for API request (more info in README)
 api_key = open("config.txt", "r", encoding="utf-16").read()
