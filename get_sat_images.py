@@ -85,9 +85,9 @@ def requestImage(picHeight, picWidth, logoHeight, zoom, scale, maptype, lat, lng
     img = tf.image.crop_to_bounding_box(img, logoHeight, 0, picWidth, picHeight)
 
     # ---- Print the requested image ----
-    # RGBimage = tf.io.encode_png(img)
-    # filename = "testOutput/image_" + str(row) + "," + str(col) + ".png"
-    # tf.io.write_file(filename, RGBimage)
+    RGBimage = tf.io.encode_png(img)
+    filename = "testOutput/00image_" + str(row) + "," + str(col) + ".png"
+    tf.io.write_file(filename, RGBimage)
     # -----
 
     return img
@@ -175,9 +175,10 @@ def getElevPoints():
 def createTensor(image, elevations):
 
     image = tf.dtypes.cast(image, tf.float64)
-    normalisedImage = normalise(image)
+    # normalisedImage = normalise(image)
     normalisedElevs = normalise(elevations, minE, maxE)
-    combined = tf.concat([normalisedImage, normalisedElevs], axis=2)
+    normalisedElevs = tf.map_fn(lambda x: x*255, normalisedElevs)
+    combined = tf.concat([image, normalisedElevs], axis=2)
 
     # ---- Print heightmap ----
     # elevMax = tf.reduce_max(normalisedElevs)
@@ -190,7 +191,7 @@ def createTensor(image, elevations):
     # tf.io.write_file("testOutput/height_" + str(row) + "," + str(col) + ".png", heightmap)
     #-----
 
-    filename = "data/" + areaID + "_" + str(row) + "," + str(col) + ".obj"
+    filename = "data/" + areaID + "tesssst_" + str(row) + "," + str(col) + ".obj"
     f = open(filename, 'wb')
     pickle.dump(combined, f)
 
@@ -205,22 +206,22 @@ def normalise(arr, minE = 0, maxE = 255):
     return normailsed
 
 # Bounding box for area to be scanned. AreaID is added to file name.
-areaID = "SanFran"
-northWestLat = 38.561223
-northWestLng = -123.207851
-southEastLat = 37.089995
-southEastLng = -121.513108
+areaID = "testalps2"
+northWestLat = 47.309535
+northWestLng = 8.968262
+southEastLat = 46.098575
+southEastLng = 14.054704
 
 # Variables for API request (more info in README)
 api_key = open("config.txt", "r", encoding="utf-16").read()
-zoom = 15
+zoom = 12
 logoHeight = 22 #(crop google logo off last 16 pixels)
-picHeight = 257
-picWidth = 257
+picHeight = 128
+picWidth = 128
 scale = 1
 maptype = "satellite"
 
-numElevations = 64 # Should be factor of pic height/ width -1
+numElevations = 31 # Should be factor of pic height/ width -1
 elevPoints = getElevPoints()
 maxE = 8000
 minE = -40
