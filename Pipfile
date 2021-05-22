@@ -15,6 +15,9 @@ scikit-learn = "*"
 scipy = "*"
 ipython = "*"
 opencv-python = "*"
+imageio = "*"
+scikit-image = "*"
+keras = "*"
 
 [dev-packages]
 
