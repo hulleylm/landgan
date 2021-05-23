@@ -79,7 +79,7 @@ def checkIfLand(lat, lng):
 def requestImage(picHeight, picWidth, logoHeight, zoom, scale, maptype, lat, lng, row, col):
 
     center = str(lat) + "," + str(lng)
-    url = "https://maps.googleapis.com/maps/api/staticmap?center=" + center + "&zoom=" + str(zoom) + "&size=" + str(picWidth) + "x" + str(picHeight+(logoHeight*2)) + "&key=" + api_key + "&maptype=" + maptype + "&scale=" + str(scale)
+    url = "https://maps.googleapis.com/maps/api/staticmap?center=" + center + "&zoom=" + str(zoom) + "&size=" + str(picWidth) + "x" + str(picHeight+(logoHeight*2)) + "&key=" + api_key + "&maptype=satellite&scale=1"
     satImage = requests.get(url)
     img = tf.image.decode_png(satImage.content, channels=3)
     img = tf.image.crop_to_bounding_box(img, logoHeight, 0, picWidth, picHeight)
@@ -176,8 +176,11 @@ def createTensor(image, elevations):
 
     image = tf.dtypes.cast(image, tf.float64)
     # normalisedImage = normalise(image)
+    test1 = elevations.numpy()
     normalisedElevs = normalise(elevations, minE, maxE)
+    test2 = normalisedElevs.numpy()
     normalisedElevs = tf.map_fn(lambda x: x*255, normalisedElevs)
+    test3 = normalisedElevs.numpy()
     combined = tf.concat([image, normalisedElevs], axis=2)
 
     # ---- Print heightmap ----
@@ -215,11 +218,9 @@ southEastLng = 14.054704
 # Variables for API request (more info in README)
 api_key = open("config.txt", "r", encoding="utf-16").read()
 zoom = 12
-logoHeight = 22 #(crop google logo off last 16 pixels)
+logoHeight = 22 #(crop google logo off last 22 pixels)
 picHeight = 128
 picWidth = 128
-scale = 1
-maptype = "satellite"
 
 numElevations = 31 # Should be factor of pic height/ width -1
 elevPoints = getElevPoints()
@@ -229,7 +230,7 @@ minE = -40
 mapHeight = 256
 mapWidth = 256
 xScale = math.pow(2, zoom) / (picWidth/mapWidth)
-yScale = math.pow(2, zoom) / (picHeight/mapWidth)
+yScale = math.pow(2, zoom) / (picHeight/mapHeight)
 
 startLat = northWestLat
 startLng = northWestLng
