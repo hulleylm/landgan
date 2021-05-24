@@ -1,19 +1,43 @@
 \documentclass[a4paper]{report}
 \include{final_diss.preamble}
 \renewcommand*{\thesection}{\arabic{section}}
-\renewcommand{\thesubsection}{\thesection(\alph{subsection})}
+\renewcommand{\thesubsection}{\thesection.\alph{subsection}}
 
 \begin{document}
 \input{titlepage}
-\section{Dedication}
-\section{AnonTitle}
-\section{Abstract}
-\section{Contents}
+Text here
+\newpage
+\begin{center}
+
+\textbf{\Large Generative Adversarial Networks for Terrain Generation}
+\vspace{2em}
+\end{center}
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=0.9\textwidth]{alps.png}
+        \label{fig:title}
+\end{figure}
+
+\begin{center}
+    \textsc{University of Liverpool, Department of Computer Science}
+\end{center}
+\begin{center}
+    \textsc{COMP390 - 2020/21}
+\end{center}
+
+\textbf{Abstract}
+
+abstract here
+
+\newpage
+\tableofcontents
+\newpage
 \section{Introduction}
 \subsection{Aims and Objectives}
 \subsection{Background Information}
 \subsubsection{Video Game Terrain}
-As the video game industry grows, so does the need for more detailed, exciting and extensive terrains. Procedural terrain generation has been an integral part of video games throughout their existence. An early example of such being the entirely ASCII-based 1980 game, Rogue \cite{rogue}. The level maps, treasure and monsters are procedurally generated each time the game is played. Rogue inspired future games and spawned the category of Rogue-like games which now contains hundreds, if not thousands,\footnote{Figure estimated from Steam search results \cite{roguelikeSteam} and the following list \cite{roguebasin_2020}. There is also the assumption that there are unpublished video games developed using rogue-like techniques.} of procedurally generated games.
+As the video game industry grows, so does the need for more detailed, exciting and extensive terrains. Procedural generation is the main method of generating these terrains and has been an integral part of video games throughout their existence. An early example of such being the entirely ASCII-based 1980 game, Rogue \cite{rogue}. The level maps, treasure, and monsters are procedurally generated each time the game is played. Rogue inspired future games and spawned the category of Rogue-like games which now contains hundreds, if not thousands,\footnote{Figure estimated from Steam search results \cite{roguelikeSteam} and the following list \cite{roguebasin_2020}. There is also the assumption that there are unpublished video games developed using rogue-like techniques.} of procedurally generated games.
 
 The response to the demand for more realistic terrain can be seen in the development of the snowboarding game, SSX(2012) \cite{SSX}. This was the first game in the SSX series to use real world terrain data and the response was overwhelmingly positive. While this was impressive in 2012, it would struggle to compete with the infinite, procedurally generated maps of today's games.
 
@@ -22,22 +46,22 @@ While the terrain in Rogue was formed using simple rule based algorithms, more c
 \begin{figure}[H]
     \centering
         \includegraphics[width=0.95\textwidth]{fractals.png}
-        \caption{Shows }
+        \caption{Natural fractals found in the Chinese Himalayas (left) and a romanesco broccoli (right)}
         \label{fig:fractals}
 \end{figure}
 
 \paragraph{Fractal Techniques}
 
-Fractals are seen throughout the natural world, from mountains, to rivers, to broccoli (figure \ref{fig:fractals}). Fractals are recursive algorithms that preserve self similarity. In nature, an element of randomness is always present and one algorithm that aims to replicate this is the diamond square algorithm.
+Fractals are seen throughout the natural world, from mountains, to rivers, to broccoli (figure \ref{fig:fractals}). Fractals are recursive algorithms that preserve self similarity. In nature, an element of randomness is always present and one algorithm that aims to replicate this is the diamond square algorithm (D-Sq).
 
-The D-Sq algorithm begins with a 2d array, the 4 corners of which are set to some initial values. It then iterates between calculating the midpoint of that square, then the midpoints of the resulting `diamonds'. The values in the array are the `elevation' of the height map and can be plotted in the z axis.
+The D-Sq algorithm begins with a 2d array, the 4 corners of which are set to some initial values. It then iterates between calculating the midpoint of that square, then the midpoints of the resulting `diamonds'. The values in the resulting array are the `elevation' of the height map and can be plotted in the z axis.
 
 To better understand the algorithm, a simple Python implementation was made which demonstrates the effects of changing the randomness of the algorithm and the resulting `roughness' of the terrain. Figure \ref{fig:fractalPlots} shows the output of the D-Sq script with varying levels of roughness. Two main criticisms of this technique are the presence of artefacts in the resulting terrain and the unrealistic terrain generated (either too regular or too random)\cite{Dsq}. Figure \ref{fig:fractalPlots}(randomness: 5) is an example of the repetitive patterns often generated by this technique. No `mountain' is exactly the same, due to the addition a random value at each iteration, but as a group they can seem unnaturally repetitive. Conversely, with higher levels of roughness or randomness, the mountains can be too steep, sparse and random. Another common problem associated with this technique is the artefacts left behind. Pinches can form between the tiles when the edge values do not line up \cite{proGen}.
 
 \begin{figure}[H]
     \centering
         \includegraphics[width=0.95\textwidth]{fractalPlots.png}
-        \caption{Shows }
+        \caption{Plots produced by the \textit{DSq.py} script at varying levels of roughness. Roughness values used, from left to right: 5, 10, 20, 40.}
         \label{fig:fractalPlots}
 \end{figure}
 
@@ -50,19 +74,17 @@ The merit of both these techniques is that the style of terrain can easily be ch
 \begin{figure}[H]
     \centering
         \includegraphics[width=0.95\textwidth]{perlin.png}
-        \caption{To Do}
+        \caption{Perlin noise (left) and heightmaps from the Alps dataset used in this project (right).}
         \label{fig:perlin}
 \end{figure}
 
 \paragraph{Combined Techniques}
 On their own, fractal and noise techniques will only produce a terrain map with no textures or colouring. To produce a realistic and playable landscape, they must be combined with other algorithms, data or manual input. An example of a software which does just this, is Terragen \cite{terragen}. Decades of development and research into world generation algorithms has resulted in a software that produces incredibly realistic and navigable worlds (figure \ref{fig:terra}). Despite the many complex algorithms and rules used today, the software was originally created using fractal algorithms \cite{Fairc}.
 
-% could talk about ass creed
-
 \begin{figure}[H]
     \centering
         \includegraphics[width=0.95\textwidth]{terra.png}
-        \caption{To Do}
+        \caption{Landscapes generated in Terragen}
         \label{fig:terra}
 \end{figure}
 
@@ -76,21 +98,21 @@ The aim of the generator is to `fool' the adversarial network into thinking the 
 \begin{figure}[H]
     \centering
         \includegraphics[width=0.95\textwidth]{generator.png}
-        \caption{To Do}
+        \caption{Simplistic diagram of a general GAN architecture.}
         \label{fig:gan}
 \end{figure}
 
 \paragraph{StyleGAN}
-In March 2019, NVIDIA released StyleGAN: A Style-Based Generator Architecture for Generative Adversarial Networks \cite{ToDo}. This architecture aimed to demistfy aspects of the image synthesis process within the generator network. Before this, studies largely focused on improving the adversarial network; the generative network was more of a `black-box'. The conclusion from this study was that `the traditional GAN generator architecture is in every way inferior to a style-based design'. A variation on StyleGAN2-Ada \cite{ToDo} is the specific GAN architecture used for this project. More information on this architecture and the motivations behind this choice are found in section (ToDo).
+In March 2019, NVIDIA released StyleGAN: A Style-Based Generator Architecture for Generative Adversarial Networks \cite{stylegan}. This architecture aimed to demistfy aspects of the image synthesis process within the generator network. Before this, studies largely focused on improving the adversarial network; the generative network was more of a `black-box'. The conclusion from this study was that `the traditional GAN generator architecture is in every way inferior to a style-based design'. A variation on StyleGAN2-Ada \cite{stylegan2} is the specific GAN architecture used for this project. More information on this architecture and the motivations behind this choice are found in sections 1.d and 2.b.
 
 \subsection{Existing work}
 \paragraph{Terrain Generation with GANs}
-Evidence shows the success of GANs in various aspects of terrain generation. Figure \ref{fig:rivers} (left) shows the results of a PGGAN (progressive GAN) trained on satellite images of US rivers \cite{riverSat}. The success of this study opens up the argument for the use of GANs for satellite image generation.
+Evidence shows the success of GANs in various aspects of terrain generation. Figure \ref{fig:rivers} shows the results of a PGGAN (progressive GAN) trained on satellite images of US rivers \cite{riverSat}. The success of this study supports the argument for the use of GANs for satellite image generation.
 
 \begin{figure}[H]
     \centering
-        \includegraphics[width=0.9\textwidth]{rivers.png}
-        \caption{Shows the results of satellite river generation in \cite{riverSat}}
+        \includegraphics[width=0.95\textwidth]{rivers.png}
+        \caption{A sample of the results of satellite river generation in \cite{riverSat}}
         \label{fig:rivers}
 \end{figure}
 
@@ -99,54 +121,64 @@ As for elevation, a study by Beckham et.al.\cite{beckham2017step} shows similar 
 \begin{figure}[H]
     \centering
         \includegraphics[width=0.9\textwidth]{elevs.png}
-        \caption{Shows the results of satellite river generation in \cite{riverSat}}
+        \caption{(left) Terrain generated from Nasa elevation data \cite{beckham2017step}. (right) Heightap textures generated by a GAN \cite{beckham2017step}}
         \label{fig:elevs}
 \end{figure}
 
-Most closely related to my project, is the 2019 paper: `Realistic and Textured Terrain Generation using GANs'. Spick and Walker use a combination of satellite imagery and elevation data to form 4 channel RGBA images that are then used to train a Spatial GAN (SGAN) \cite{ToDo}. The results can be seen in figure \ref{fig:elevGAN}, with further reults listed in the appendix at section \ref{appendix:gan}, figure \ref{fig:elevRes}. These show the ability of SGAN to produce relatively accurate results, especially compared to other models such as DCGAN (a deep convolutional GAN). They also show how even SGAN struggles to capture less common features such as sharp ridges and deep valleys. The SGAN results still show a more smoothed out version of the original terrain data. This is one of the failings that this project aims to address with the use of StyleGAN. 
+Most closely related to this project is the 2019 paper: `Realistic and Textured Terrain Generation using GANs' \cite{spick}. Spick and Walker use a combination of satellite imagery and elevation data to form 4 channel RGBA images that are then used to train a Spatial GAN (SGAN) \cite{sgan}. The results can be seen in figure \ref{fig:elevGAN}, with further reults listed in the appendix at section \ref{appendix:gan}, figure \ref{fig:elevRes}. These show the ability of SGAN to produce relatively accurate results, especially compared to other models such as DCGAN (a deep convolutional GAN). They also show how even SGAN struggles to capture less common features such as sharp ridges and deep valleys. The SGAN results still show a more smoothed out version of the original terrain data. This is one of the failings that this project aims to address with the use of StyleGAN. 
 
 \begin{figure}[H]
     \centering
-        \includegraphics[width=0.9\textwidth]{GANelev.png}
-        \caption{Shows the results of satellite river generation in \cite{riverSat}}
+        \includegraphics[width=0.95\textwidth]{GANelev.png}
+        \caption{Sample data generated by an SGAN trained on Nasa satellite and Elevation data. \cite{sgan}}
         \label{fig:elevGAN}
 \end{figure}
 
 \subsection{Motivation}
-As mentioned previously, the choice of StyleGAN as the architecture for this model was partly due to the `averaging' of the terrain caused by architectures used in previous studies. StyleGAN is an ideal solution for this as the synthesis of the image can be controlled much more precisely. For the Flickr Faces-HQ data set (figure \ref{fig:ToDo}) this is shown through the ability to control freckles, glasses, hair colour and other stochastic features. In the case of the terrain data in this project, this can be used to control the presence of features such as snow, mountain peaks, or lakes. In the research for this project there was no work found that utilised StyleGAN for combined satellite imagery and elevation data generation.
+As mentioned previously, the choice of StyleGAN as the architecture for this model was partly due to the `averaging' of the terrain caused by architectures used in previous studies. StyleGAN is an ideal solution for this as the synthesis of the image can be controlled much more precisely. For the Flickr Faces-HQ data set (figure \ref{fig:styles}) this is shown through the ability to control freckles, glasses, hairstyle and other stochastic features. In the case of the terrain data in this project, this can be used to control the presence of features such as snow, mountain peaks, or lakes. In the research for this project there was no work found that utilised StyleGAN for combined satellite imagery and elevation data generation.
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=0.6\textwidth]{styles.png}
+        \caption{An example of the stochastic variation possible with the StyleGAN architecture \cite{stylegan}}
+        \label{fig:styles}
+\end{figure}
 
 The traditional methods of fractal and noise based terrain generation have been used and developed upon for decades. The possibility of using GANs as an alternative or supplement to these methods is the main motivation behind this project. StyleGAN addresses many of the points that fractal and noise techniques struggle with, namely the lack of realism and occurrence of artefacts in the resulting terrains.
 \section{Design and Implementation}
 \subsection{Dataset Creation}
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=0.95\textwidth]{alps.png}
+        \caption{Google Maps satellite view of the area to be scanned}
+        \label{fig:alps}
+\end{figure}
+
 \subsubsection{Requirements}
 \begin{enumerate}
     \item The data set should contain enough data to accurately train a model. At least $\sim$2,500 items.
-%Ini-tially aimed for  2,500 items however tests showed that reasonable outputscould be produced with as little as 100.
+%Ini-tially aimed for  2,500 items however tests showed that reasonable outputscould be produced with as little as 100. ToDo
     \item The script for collecting the data should be easy to adapt to collect data from different regions and zoom levels.
     \item The satellite images used should be an appropriate resolution to the chosen zoom levels, so all features are visible in the image.
     \item The elevation accuracy should be appropriate to the zoom levels used in the satellite images.
     \item The script should combine the satellite images and elevation data into a format that can be encoded to an RGBA PNG file.
 \end{enumerate}
 \subsubsection{Implementation}
-The full script used to fetch the data and encode it to PNG files is stored in the get\_data.py file. This script uses the Google Static Maps and Elevation APIs to request the necessary data. Bounding corners of the area to be converted are passed to the script as lat/lng coordinates. The script then iterates through the following loop to convert and save the data as RGBA files.
+The full script used to fetch the data and encode it to PNG files is stored in the \textit{get\_data.py} file. This script uses the Google Static Maps and Elevation APIs to request the necessary data. Bounding corners of the area to be converted are passed to the script as lat/lng coordinates. The script then iterates through the following loop to convert and save the data as RGBA files.
 
 The process of preparing these files for the model is as follows:
 \begin{enumerate}
-    \item Select the bounding box of the area to be scanned. For the 128RGBA dataset, an area of the alps shown in figure \ref{fig:alps} was used, bounded by the coordinates NW:47.309535, 8.968262; SE: 46.098575, 14.054704.
+    \item Select the bounding box of the area to be scanned. For the 128RGBA dataset, an area of the Alps shown in figure \ref{fig:alps} was used, bounded by the coordinates NW:47.309535, 8.968262; SE: 46.098575, 14.054704.
     \item Assign the bounding coordinates values to the variables in the script (lines 1 - 5 in algorithm 1).
-    \item Set the zoom level and height/ width of the image (12 and 128*128 respectively for 128RGBA). These variables are used by the API to determine the zoom level and size of the returned image. More information on the input options is available in the API docs \cite{ToDo}.
+    \item Set the zoom level and height/ width of the image (12 and 128*128 respectively for 128RGBA). These variables are used by the API to determine the zoom level and size of the returned image. More information on the input options is available in the API docs \cite{docs}.
     \item The script then requests the image with the Static Maps API and converts it to a tensor (array).
     \item The \textit{elevations} array is then filled with a single request to the Google Elevations API. If the number of pixels in the image is more than the maximum number of requests allowed to the API, the script interpolates the missing values.
-    \item The elevations tensor is normalised to a [0,255] range and concatenated with the image tensor.
+    \item The \textit{elevations} array is normalised to a [0,255] range and concatenated with the \textit{image} array.
     \item The resulting tensor is then encoded to an RGBA PNG image and saved.
 \end{enumerate}
 
-\begin{figure}[H]
-    \centering
-        \includegraphics[width=0.95\textwidth]{alps.png}
-        \caption{Shows the results of satellite river generation in}
-        \label{fig:alps}
-\end{figure}
+The pseudocode of the process is shown below.
 
 \begin{algorithm}[H]
     \caption{Initialising variables to request and convert data set}
@@ -182,16 +214,16 @@ The process of preparing these files for the model is as follows:
         \State $row\gets 0$
         \State $lat\gets startLat$
         \State
-        \While{$lat >= southEastLat$}
+        \While{$lat >= southEastLat$} \Comment{Loop runs until reaches the SW corner of bounds}
         \State $lng\gets startLng$
         \State $col\gets 0$
         \While{$lng <= southEastLng$}
         \If{\Call{CheckIfLand}{lat,lng}$\equiv True$}
         \State $bounds\gets$ \Call{GetImageBounds()}{}
-        \State $image\gets$ \Call{RequestImage()}{}
+        \State $image\gets$ \Call{RequestImage()}{} \Comment{Request to Google Static Maps API}
         \State $elevSteps\gets$ \Call{GetElevStep()}{}
-        \State $elevations\gets$ \Call{RequestElevations()}{}
-        \State \Call{CreateTensor()}{}
+        \State $elevations\gets$ \Call{RequestElevations()}{} \Comment{Request to Google Elevations API}
+        \State \Call{CreateTensor()}{} \Comment{Tensor is saved as a Python pickle file}
         \EndIf
         \State $col\gets col+1$
         \State $lng\gets lng + lngStep$
@@ -203,7 +235,7 @@ The process of preparing these files for the model is as follows:
 \end{algorithm}
 
 \subsubsection{Development Environment}
-The data set creation script was written in Python, in the VS Code editor. Version control is done with Git and the repository for the script (and all of these files) can be found here \cite{ToDo}. Pipenv \cite{ToDo} is used as a packaging tool to ensure this code can be run easily on any machine and mitigate any risk of hardware failure.\footnote{Information on package versions necessary to run the script are available in the pipfile.}
+The data set creation script was written in Python, in the VS Code editor. Version control is done with Git and the repository for the script (and all of these files) can be found here \cite{github}. Pipenv is used as a packaging tool to ensure this code can be run easily on any machine and mitigate any risk of hardware failure.\footnote{Information on package versions necessary to run the script are available in the \textit{pipfile}.}
 
 \subsubsection{Design Choices}
 \paragraph{File Format - RGBA}
@@ -214,7 +246,7 @@ There is one main limitation to this format, the values must all be stored as in
 \begin{figure}[H]
     \centering
         \includegraphics[width=0.95\textwidth]{rgba.png}
-        \caption{Shows the results of satellite river generation in}
+        \caption{Format of the data in the dataset. Each `pixel' has an assosciated red, green, blue and alpha value and a lat/lng coordinate can be inferred from it's index.}
         \label{fig:rgba}
 \end{figure}
 
@@ -225,10 +257,10 @@ The difficulties surrounding this conversion led to the creation of a more gener
 \paragraph{Region Selection}
 The alpine region pictured in figure \ref{fig:alps} was chosen for a number of reasons. It was important to generate a similar terrain to that of the examples shown in figures \ref{fig:fractalPlots}, \ref{fig:rivers}, \ref{fig:elevs} and \ref{fig:elevGAN} in order to form a comparison. The fractal property of the terrain also allows us to compare against the fractal technique, without the need for a texture comparison.
 
-The presence on snow in less than half of the images allows an evaluation of the ability of StyleGAN to generate varied data, and not just learn from the averages. It can also be used to assess how well the model has learned the correlation between snow and higher elevations.
+The presence on snow in less than half of the images allows an evaluation of the ability of StyleGAN to generate varied data, and not just learn from the averages in the dataset. It can also be used to assess how well the model has learned the correlation between snow and higher elevations.
 
 \paragraph{API Limitations and Array Interpolation}
-The majority of limits on the APIs were high enough that they did not affect this project. However, the elevation API only allowed 512 locations per request. $\sim$500 elevation points spread across the image was still within the error margin of Google's elevation data. For this reason the decision was made to find the elevation of an even spread of points across the image and interpolate between these points to form the full array necessary for a complete image. Figure \ref{fig:interpolate} shows the different methods of interpolation tested for the elevation array. `Nearest' uses the nearest available value so the resulting heightmap appears more pixelated. The `Linear' and `Cubic' methods both showed similar results however Linear appeared to smooth out some of the natural ridges so Cubic was chosen instead.
+The majority of limits on the APIs were high enough that they did not affect this project. However, the elevation API only allowed 512 locations per request. $\sim$500 elevation points spread across the image was still within the error margin of Google's elevation data. For this reason, the decision was made to find the elevation of an even spread of points across the image and interpolate between these points to form the full array necessary for a complete image. Figure \ref{fig:interpolate} shows the different methods of interpolation tested for the elevation array. `Nearest' uses the nearest available value so the resulting heightmap appears more pixelated. The `Linear' and `Cubic' methods both showed similar results however Linear appeared to smooth out some of the natural ridges so Cubic was chosen instead.
 
 \begin{figure}[H]
     \centering
@@ -306,6 +338,22 @@ The RGBA dataset adds the 4th elevation channel to the previous dataset.
 \section{Evaluation}
 \subsection{Comparison Against Traditional Techniques}
 \subsection{Further Work}
+The work presented in this project is by no means complete. It is a proof of concept and intended to be developed upon. Some possible developments and solutions to current limitations are listed below.
+
+\subsubsection{High Performance Computing}
+The model is currently run on a 32 core P-100 Tesla GPU. Had there been more time, the code would have been run on the compute nodes of the university's HPC, Barkla. For state of the art results, comparable to those in the original StyleGAN paper (figure \ref{fig:ToDo}), NVIDIA advise that the model be trained on NVIDIA DGX-1 with 8 Tesla V100 GPUs.
+
+\subsubsection{Combined Land Cover Data}
+Land cover data (as in figure \ref{fig:ToDo}) could be used to train a conditional GAN alongside the satellite and/ or elevation data already present. Models such as GauGAN \cite{ToDo} could allow developers to draw out types of land they would like on their map and have that area automatically elevated and textured by the model. The interactive interface of GauGAN, shown in figure \ref{fig:ToDo}, shows how a user can define the elements they want in an image and the software can render those elements realistically in a style selected by the user.
+
+Other channels such as climate, population and historical data could also be added to inform rule based algorithms for the game environment. Climate data in particular could be used to control the weather in various regions.
+
+\subsubsection{Infinite terrain}
+A GAN can generate infinite numbers of images but the data generated in this project is limited by the image size of the input data. Were the terrains generated to be used for actual gameplay, the user would soon find themselves at the edge of the playable map.
+
+GANs have shown success at predicting and extending existing images \cite{ToDo}. Figure \ref{fig:ToDo} (left) shows the results of different GAN architectures attempting to extend different images. There is no reason that this technique could not also be applied to the 4channel RGBA images used to train StyleGAN. A second GAN could be used to extend scenes, or even blend together and fill in gaps between generated scenes \ref{fig:ToDo} (right).
+% Include picture filling in data 
+
 \subsection{Ethical Considerations}
 \subsubsection{Data Ownership and Copyright}
 The Google terms of service state that anything produced using their APIs must be attributed to them. Google is cited at multiple points in the work so while there is no worry of copyright infringement, it does bring up the larger issue of ownership of GAN-generated data.
@@ -326,7 +374,6 @@ While Video Game development has always been inherently technology based, there 
 If developing a commercial application of the methods produced in this paper, it is critical to evaluate how it would affect the work of game developers in the industry. The current methods of terrain development should be assessed to ensure the product would enhance the work of developers and not just replace it.
 
 \section{Conclusion}
-\subsection{Further developments}
 \section{BCS Project Criteria and Self-Reflection}
 \subsection{An ability to apply practical and analytical skills gained during the degree programme}
 The fulfilment of this criterion is shown throughout the project. Modules such as \textit{Introduction to Artificial Intelligence} and \textit{Data Mining and Visualisation} taught me the technical background and theory to understand the basics of GANs and machine learning concepts. Throughout my degree I have practised researching skills and have shown this skill in action in the \textbf{Backgound Information} section of this dissertation. Good coding practice has been encouraged and rewarded in many of my modules and enforced the standard of the code produced as part of this project.
