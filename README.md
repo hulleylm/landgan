@@ -3,6 +3,6 @@ Generative adversarial network that uses Google Maps satellite imagery and Nasa 
 
 Final year project for BSc Computer Science at the University of Liverpool.
 
-Training on 2,500 128x128 RGB satellite images over 1,200 epochs (animated gif)
+Training on 2,500 128x128 RGBA satellite images over 1,200 epochs (animated gif)
 
-![](dissertation/final/images/epochs.gif)
+![](dissertation/final/images/combo.gif)
