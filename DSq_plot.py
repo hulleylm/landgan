@@ -1,6 +1,5 @@
 import numpy as np
-from mpl_toolkits.mplot3d import Axes3D  
-# Axes3D import has side effects, it enables using projection='3d' in add_subplot
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import random
 
