@@ -1,4 +1,4 @@
-## Landscape_GAN
+# Landscape_GAN
 Final year project for BSc Computer Science at the University of Liverpool.
 
 ![Generated sat images](./readmeImages/512generated.png)
@@ -18,7 +18,7 @@ This repository contains my final year undergraduate dissertation and the code u
 
 ## Results not shown in the dissertation
 
-# Training on 2,500 128x128 RGBA satellite images over 1,200 epochs (animated gif).
+#### Training on 2,500 128x128 RGBA satellite images over 1,200 epochs (animated gif).
 Combined RGBA images (set to a white background)
 
 ![](readmeImages/comboSmall.gif)
@@ -31,4 +31,4 @@ Heightmap channel (final channel of original image)
 
 ![](readmeImages/heightSmall.gif)
 
-# Traversal through the latent space of the same dataset
+#### Traversal through the latent space of the same dataset
