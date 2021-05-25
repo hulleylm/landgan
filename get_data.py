@@ -76,7 +76,7 @@ def checkIfLand(lat, lng):
         print("X Sea: " + str(lat) + "," + str(lng) + " point: " + str(row) + "," + str(col))
         return False
 
-def requestImage(picHeight, picWidth, logoHeight, zoom, scale, maptype, lat, lng, row, col):
+def requestImage(picHeight, picWidth, logoHeight, zoom, lat, lng, row, col):
 
     center = str(lat) + "," + str(lng)
     url = "https://maps.googleapis.com/maps/api/staticmap?center=" + center + "&zoom=" + str(zoom) + "&size=" + str(picWidth) + "x" + str(picHeight+(logoHeight*2)) + "&key=" + api_key + "&maptype=satellite&scale=1"
@@ -249,7 +249,7 @@ while (lat >= southEastLat):
     while lng <= southEastLng:
         if checkIfLand(lat, lng):
             bounds = getImageBounds(mapWidth, mapHeight, xScale, yScale, lat, lng)
-            image = requestImage(picHeight, picWidth, logoHeight, zoom, scale, maptype, lat, lng, row, col)
+            image = requestImage(picHeight, picWidth, logoHeight, zoom, lat, lng, row, col)
             elevSteps = getElevStep(mapWidth, mapHeight, bounds)
             elevations = requestElevations(mapWidth, mapHeight, bounds, elevSteps)
             createTensor(image, elevations)
