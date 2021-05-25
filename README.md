@@ -26,19 +26,19 @@ This repository contains my final year undergraduate dissertation and the code u
 #### Training on 2,500 128x128 RGBA satellite images over 1,200 epochs (animated gif).
 Combined RGBA images (set to a white background)
 
-![](readmeImages/comboSmall.gif)
+![RGBA image generation](readmeImages/comboSmall.gif)
 
 RGB images (above images seperated to just the first three channels)
 
-![](readmeImages/imagesSmall.gif)
+![RGB image generation](readmeImages/imagesSmall.gif)
 
 Heightmap channel (final channel of original image)
 
-![](readmeImages/heightSmall.gif)
+![Height map image generation](readmeImages/heightSmall.gif)
 
 #### Traversal through the latent space of the same dataset
 The following gifs show the data generated when travelling between points in the latent space. These were generated from the 512x512 RGBA dataset and the results split into the RGB and height map channels.
 
-![](readmeImages/traverse.gif)
+![RGB traversal generation](readmeImages/traverse.gif)
 
-![](readmeImages/heightTraversal.gif)
+![Height map traversal generation](readmeImages/heightTraversal.gif)
