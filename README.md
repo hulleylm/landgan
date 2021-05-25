@@ -37,3 +37,8 @@ Heightmap channel (final channel of original image)
 ![](readmeImages/heightSmall.gif)
 
 #### Traversal through the latent space of the same dataset
+The following gifs show the data generated when travelling between points in the latent space. These were generated from the 512x512 RGBA dataset and the results split into the RGB and height map channels.
+
+![](readmeImages/traverse.gif)
+
+![](readmeImages/heightTraversal.gif)
