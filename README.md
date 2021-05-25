@@ -1,6 +1,11 @@
 # Landscape_GAN
 Final year project for BSc Computer Science at the University of Liverpool.
 
+> This project uses the following resources to generate the terrain data:
+> - The specific variant on StyleGAN2, implemented as a [colab notebook](https://github.com/eps696/stylegan2ada/blob/master/StyleGAN2a_colab.ipynb) from [this repository](https://github.com/eps696/stylegan2ada)
+> - NVIDIA [StyleGAN2 pytorch architecture](https://github.com/NVlabs/stylegan2-ada-pytorch)
+> - Google [Maps Static](https://developers.google.com/maps/documentation/maps-static/overview) and [Elevation](https://developers.google.com/maps/documentation/elevation/start) APIs for dataset creation
+
 ![Generated sat images](./readmeImages/512generated.png)
 
 **Picture:** *These are not real satellite images. They were generated using the methods discussed in this project.*
