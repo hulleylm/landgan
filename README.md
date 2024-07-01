@@ -1,5 +1,5 @@
 # Landscape_GAN
-Final year project for BSc Computer Science at the University of Liverpool.
+Final year project for BSc Computer Science at the University of Liverpool. This project was completed before the recent boom of widely accesible online AI tools, and was one of the first recorded examples of the use of GANs for combined image and elevation terrain generation.
 
 > This project uses the following resources to generate the terrain data:
 > - The specific variant on StyleGAN2, implemented as a [colab notebook](https://github.com/eps696/stylegan2ada/blob/master/StyleGAN2a_colab.ipynb) from [this repository](https://github.com/eps696/stylegan2ada)
